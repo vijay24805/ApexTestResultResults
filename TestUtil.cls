@@ -1,8 +1,14 @@
 public with sharing class TestUtil {
 	
+	public static ApexTestResultConfig__mdt custMeta =[select id,Value__c from ApexTestResultConfig__mdt where developername='TestClasses'];
+	
 	public static ID enqueueTests() {
-		
-		ApexClass[] testClasses = [SELECT Id FROM ApexClass WHERE Name IN ('AddPrimaryContactTest','TestAccountDeletion')];
+		String queryTestClasses = '%'+custMeta.Value__c;
+		String[] queryApexTestClasses = custMeta.Value__c.split(',');
+		system.debug(queryTestClasses);
+		system.debug(queryApexTestClasses);
+		ApexClass[] testClasses = [SELECT Id FROM ApexClass WHERE Name like :queryTestClasses 
+																OR Name in :queryApexTestClasses limit 2];
 		if (testClasses.size() > 0) {
 			ApexTestQueueItem[] queueItems = new List<ApexTestQueueItem>();
 			for (ApexClass cls : testClasses) {
@@ -32,7 +38,8 @@ public with sharing class TestUtil {
     	ApexTestResult[] results = [SELECT Outcome, ApexClass.Name, MethodName, Message, StackTrace
     									FROM ApexTestResult WHERE AsyncApexJobId=:jobId];
     	Document d = new Document();
-    	d.Name = 'TestResult'; 
+    	String regex ='[-,:,\' \']';
+    	d.Name = 'TestResult' + String.valueof(Datetime.now()).replaceAll(regex,'');
     	String myContent='';
     	for (ApexTestResult atr : results) {
     		System.debug(atr.ApexClass.Name + '.' + atr.MethodName + ': ' + atr.Outcome);
@@ -44,7 +51,7 @@ public with sharing class TestUtil {
     	}	
     	d.Body = Blob.valueOf(myContent);
     	d.ContentType = 'text/plain';
-    	d.developerName = 'TestResult1';
+    	d.developerName = 'TestResult' + String.valueof(Datetime.now()).replaceAll(regex,'');
 		d.FolderId ='00537000000QyVs';
 		d.Type = 'txt';
 		insert d;
