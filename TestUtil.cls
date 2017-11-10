@@ -3,7 +3,7 @@ public with sharing class TestUtil {
 	public static ApexTestResultConfig__mdt custMeta =[select id,Value__c from ApexTestResultConfig__mdt where developername='TestClasses'];
 	
 	public static ID enqueueTests() {
-		String queryTestClasses = '%'+custMeta.Value__c;
+		String queryTestClasses = '%'+custMeta.Value__c; // coomect
 		String[] queryApexTestClasses = custMeta.Value__c.split(',');
 		system.debug(queryTestClasses);
 		system.debug(queryApexTestClasses);
